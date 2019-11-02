@@ -217,7 +217,7 @@ void SLIC3D::PerturbSeeds(
 			int ny = oy + dy26[i];//new y
 			int nz = oz + dz26[i];//new z
 
-			if (nx >= 0 && nx < m_width && ny >= 0 && ny < m_height && nz>=0 && nz <=m_depth)
+			if (nx >= 0 && nx < m_width && ny >= 0 && ny < m_height && nz>=0 && nz <m_depth)
 			{
 				int nind = nz*m_height*m_width + ny * m_width + nx;
 				if (edges[nind] < edges[storeind])
