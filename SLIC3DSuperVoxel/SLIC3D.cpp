@@ -82,7 +82,7 @@ void SLIC3D::PerformSLICO_ForGivenK(
 	if (nlabels) delete[] nlabels;
 }
 
-
+// Debug 20191102
 void SLIC3D::DetectLabEdges(
 	const double*				volumevec,
 	const int&					width,
