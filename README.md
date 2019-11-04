@@ -7,5 +7,6 @@ Using:
   
 Example:
   SLIC3DSuperVoxel.exe F:/H.vifo F:/H_label.raw 4096
+
+![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch.png)
   
-  https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch.png
