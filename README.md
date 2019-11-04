@@ -16,9 +16,9 @@ SLIC3DSuperVoxel.exe F:/H.vifo F:/H_label.raw 4096
 vifo file format:
 -----------------------------------------------------
 ```cpp
-1               //volume number
-uchar             //volume data type in "uchar" "float" "ushort"
+1                   //volume number
+uchar               //volume data type in "uchar" "float" "ushort"
 500 500 100         //volume dimensions in x y z direction
-1 1 1            //volume spaces in x y z direction
-SPEEDf21.raw         //volume relative path
+1 1 1               //volume spaces in x y z direction
+SPEEDf21.raw        //volume relative path
 ```
