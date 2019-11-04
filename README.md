@@ -3,7 +3,7 @@ SLIC algorithm for volume data in 3D space
 
 
 Using:
-  SLIC3DSuperVoxel.exe <input vifo file> <output raw label file> <cluster number k>
+  SLIC3DSuperVoxel.exe "input vifo file" "output raw label file" "cluster number k"
   
 Example:
   SLIC3DSuperVoxel.exe F:/H.vifo F:/H_label.raw 4096
