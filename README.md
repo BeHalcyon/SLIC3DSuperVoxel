@@ -13,7 +13,11 @@ Example:
 vifo file format:
 -----------------------------------------------------
 1                      //volume number
+
 uchar                  //volume data type in "uchar" "float" "ushort"
+
 500 500 100            //volume dimensions in x y z direction
+
 1 1 1                  //volume spaces in x y z direction
+
 SPEEDf21.raw           //volume relative path
