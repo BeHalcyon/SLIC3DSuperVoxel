@@ -39,20 +39,21 @@ void readInfoFile(const string& infoFileName, int& data_number, string& datatype
 
 
 	std::cout << "Info file has been loaded successfully." << std::endl;
+	
 }
 
 int main(int argc, char* argv[])
 {
 	
-	if(argc<4)
+	if(argc<3)
 	{
-		std::cout << "Please using [SLIC3D.exe <input vifo file> <output raw label file> <cluster number> [output raw boundary file]]." << std::endl;
+		std::cout << "Please using [SLIC3D.exe <input vifo file> <cluster number> [0 or 1 for output label file] [0 or 1 for output boundary file]]." << std::endl;
 		return -1;
 	}
 
 	//string			infoFileName = "F:/CThead/manix/manix.vifo";
 	//string			infoFileName = "F:/atmosphere/timestep21_float/multiple_variables.vifo";
-	string				infoFileName = argv[1];
+	string			infoFileName = argv[1];
 	int				data_number;
 	string			datatype;
 	hxy::my_int3	dimension;
@@ -61,11 +62,13 @@ int main(int argc, char* argv[])
 
 	readInfoFile(infoFileName, data_number, datatype, dimension, space, file_list);
 
+	auto file_path = file_list[0].substr(0, file_list[0].find_last_of('.'));
+
 	SourceVolume source_volume(file_list, dimension.x, dimension.y, dimension.z, datatype);
 
-	source_volume.loadVolume();	//origin data
+	//source_volume.loadVolume();	//origin data
 	source_volume.loadRegularVolume(); //[0, 255] data
-	source_volume.loadDownSamplingVolume(); //[0, histogram_dimension] data
+	//source_volume.loadDownSamplingVolume(); //[0, histogram_dimension] data
 
 	auto volume_data = source_volume.getRegularVolume(0);
 
@@ -73,7 +76,7 @@ int main(int argc, char* argv[])
 	//----------------------------------
 	// Initialize parameters
 	//----------------------------------
-	int k = atoi(argv[3]);//Desired number of superpixels.
+	int k = atoi(argv[2]);//Desired number of superpixels.
 	double m = 20;//Compactness factor. use a value ranging from 10 to 40 depending on your needs. Default is 10
 	int* klabels = new int[dimension.x*dimension.y*dimension.z];
 	int num_labels(0);
@@ -82,17 +85,19 @@ int main(int argc, char* argv[])
 
 	//string label_file = "F:/CThead/manix/manix_label.raw";
 	//string label_file = "F:/atmosphere/timestep21_float/_SPEEDf21_label.raw";
-	string label_file = argv[2];
-	slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, label_file);
 
+	if(argc>=4&&atoi(argv[3])==1)
+	{
+		slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, file_path+"_label.raw");
+	}
 
-	if(argc==5)
+	if(argc>=5&&atoi(argv[4])==1)
 	{
 		auto segment_boundary_array = new int[dimension.x*dimension.y*dimension.z];
 		slic_3d.DrawContoursAroundSegments(segment_boundary_array, klabels, dimension.x, dimension.y, dimension.z);
-		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, argv[4]);
+		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_boundary.raw");
+		delete[] segment_boundary_array;
 	}
-
 
 	//getchar();
 	delete[] klabels;
