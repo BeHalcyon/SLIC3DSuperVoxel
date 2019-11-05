@@ -4,7 +4,7 @@ SLIC algorithm for volume data in 3D space
 
 Using:
 ```c
-SLIC3DSuperVoxel.exe "input vifo file" "output raw label file" "cluster number k" "output raw segment boundary file"
+SLIC3DSuperVoxel.exe "input vifo file" "cluster number k" "0 or 1 for output label file" "0 or 1 for output boundary file"
 ```
 
 Example:
