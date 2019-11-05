@@ -9,10 +9,14 @@ SLIC3DSuperVoxel.exe "input vifo file" "cluster number k" "0 or 1 for output lab
 
 Example:
 ```c
-SLIC3DSuperVoxel.exe F:/H.vifo F:/H_label.raw 4096 F:/H_boundary.raw
+SLIC3DSuperVoxel.exe F:/H.vifo 8196 0 1
 ```
-![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch2.png)
-  
+![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_xyplane.png)
+
+![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_yzplane.png)
+
+![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_volumerendering.png)
+
 vifo file format:
 -----------------------------------------------------
 ```cpp
