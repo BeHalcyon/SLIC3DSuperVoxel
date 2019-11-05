@@ -11,11 +11,11 @@ Example:
 ```c
 SLIC3DSuperVoxel.exe F:/H.vifo 8196 0 1
 ```
-![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_xyplane.png)
+![xy plane](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_xyplane.png)
 
-![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_yzplane.png)
+![yz plane](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_yzplane.png)
 
-![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_volumerendering.png)
+![3D results](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_volumerendering.png)
 
 vifo file format:
 -----------------------------------------------------
