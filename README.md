@@ -32,3 +32,7 @@ Several results:
 ![3D results](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_MANIX.png)
 ![3D results](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_tooth.png)
 
+
+Reference:
+[1] SLIC Superpixels Compared to State-of-the-Art Superpixel Methods
+[2] FeatureLego: Volume Exploration Using Exhausting Clustering of Super-Voxels
