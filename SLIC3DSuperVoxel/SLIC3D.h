@@ -54,6 +54,32 @@ public:
 		const int&					depth,
 		const string&				filename);
 
+
+	//=================================================================================
+	/// DrawContoursAroundSegments
+	///
+	/// Internal contour drawing option exists. One only needs to comment the if
+	/// statement inside the loop that looks at neighbourhood.
+	//=================================================================================
+	void DrawContoursAroundSegments(
+		int*					ubuff,
+		const int*				labels,
+		const int&				width,
+		const int&				height,
+		const int&				depth,
+		const int&				boundary_value = 0x1ff);
+
+
+	//============================================================================
+	// Save superpixel labels in a text file in raster scan order
+	//============================================================================
+	void SaveSegmentBouyndaries(
+		const int*				ubuff, 
+		const int&				width,
+		const int&				height,
+		const int&				depth,
+		const string&			filename);
+
 private:
 	//============================================================================
 	// Detect color edges, to help PerturbSeeds()

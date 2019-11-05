@@ -350,7 +350,8 @@ void SLIC3D::PerformSuperpixelSegmentation_VariableSandM(
 	vector<double> distvec(sz, DBL_MAX);
 	
 	//vector<double> maxlab(numk, 10 * 10);//THIS IS THE VARIABLE VALUE OF M, just start with 10
-	vector<double> maxintensity(numk, 10*10);
+	//最大亮度值，相当于控制亮度的权重， m越大，其权重越小，这里设置为定值？
+	vector<double> maxintensity(numk, 10*1);
 
 	//vector<double> maxxy(numk, STEP*STEP);//THIS IS THE VARIABLE VALUE OF M, just start with 10
 	vector<double> maxxyz(numk, STEP*STEP);
@@ -643,4 +644,87 @@ void SLIC3D::SaveSuperpixelLabels(
 	}
 	outfile.close();
 	std::cout << "Label file for the super-voxels has been saved." << std::endl;
+}
+
+
+//=================================================================================
+/// DrawContoursAroundSegments
+///
+/// Internal contour drawing option exists. One only needs to comment the if
+/// statement inside the loop that looks at neighbourhood.
+//=================================================================================
+void SLIC3D::DrawContoursAroundSegments(
+	int*					ubuff,
+	const int*				labels,
+	const int&				width,
+	const int&				height,
+	const int&				depth,
+	const int&				boundary_value)
+{
+	const int dx26[26] = { -1,  0,  1, -1,  0,  1, -1,  0,  1, -1,  0,  1, -1,  1, -1,  0,  1, -1,  0,  1, -1,  0,  1, -1,  0,  1 };
+	const int dy26[26] = { -1, -1, -1,  0,  0,  0,  1,  1,  1, -1, -1, -1,  0,  0,  1,  1,  1, -1, -1, -1,  0,  0,  0,  1,  1,  1 };
+	const int dz26[26] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1 };
+
+	auto sz = width * height * depth;
+
+	vector<bool> is_taken(sz, false);
+
+	auto main_index(0);
+
+	for(auto i=0;i<depth;i++)
+	{
+		for (auto j = 0; j < height; j++)
+		{
+			for (auto k = 0; k < width; k++)
+			{
+				auto np(0);
+				for (auto idx = 0; idx < 26; idx++)
+				{
+					const auto x = k + dx26[idx];
+					const auto y = j + dy26[idx];
+					const auto z = i + dz26[idx];
+					if ((x >= 0 && x < width) && (y >= 0 && y < height) && (z >= 0 && z < depth))
+					{
+						const auto index = z*height*width + y * width + x;
+
+						if (!is_taken[index])//comment this to obtain internal contours
+						{
+							if (labels[main_index] != labels[index]) np++;
+						}
+					}
+				}
+				if (np > 1)//change to 3 or 5 for thinner lines
+				{
+					ubuff[main_index] = boundary_value;
+					is_taken[main_index] = true;
+				}
+				else
+				{
+					ubuff[main_index] = m_volumevec[main_index];
+				}
+				main_index++;
+			}
+		}
+	}
+	std::cout << "Segment boundary array for the super-voxels has been executed." << std::endl;
+}
+
+
+
+void SLIC3D::SaveSegmentBouyndaries(
+	const int*					ubuff,
+	const int&					width,
+	const int&					height,
+	const int&					depth,
+	const string&				filename)
+{
+	int sz = width * height * depth;
+
+	ofstream outfile(filename.c_str(), ios::binary);
+	for (int i = 0; i < sz; i++)
+	{
+		outfile.write((char*)(&ubuff[i]), sizeof(int));
+	}
+	outfile.close();
+	std::cout << "Segment boundary file for the super-voxels has been saved." << std::endl;
 }

@@ -44,9 +44,9 @@ void readInfoFile(const string& infoFileName, int& data_number, string& datatype
 int main(int argc, char* argv[])
 {
 	
-	if(argc!=4)
+	if(argc<4)
 	{
-		std::cout << "Please using [SLIC3D.exe <input vifo file> <output raw label file> <cluster number>]." << std::endl;
+		std::cout << "Please using [SLIC3D.exe <input vifo file> <output raw label file> <cluster number> [output raw boundary file]]." << std::endl;
 		return -1;
 	}
 
@@ -84,6 +84,14 @@ int main(int argc, char* argv[])
 	//string label_file = "F:/atmosphere/timestep21_float/_SPEEDf21_label.raw";
 	string label_file = argv[2];
 	slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, label_file);
+
+
+	if(argc==5)
+	{
+		auto segment_boundary_array = new int[dimension.x*dimension.y*dimension.z];
+		slic_3d.DrawContoursAroundSegments(segment_boundary_array, klabels, dimension.x, dimension.y, dimension.z);
+		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, argv[4]);
+	}
 
 
 	//getchar();
