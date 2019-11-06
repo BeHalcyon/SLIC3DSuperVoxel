@@ -80,6 +80,8 @@ public:
 		const int&				depth,
 		const string&			filename);
 
+	void SaveGradient(
+		const string&			filename);
 private:
 	//============================================================================
 	// Detect color edges, to help PerturbSeeds()
@@ -175,5 +177,8 @@ private:
 	//double**								m_lvecvec;
 	//double**								m_avecvec;
 	//double**								m_bvecvec;
+
+	//edgemag表示图中的每个节点对应的梯度差
+	vector<double>							edgemag;
 };
 

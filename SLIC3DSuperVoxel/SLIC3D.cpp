@@ -130,8 +130,7 @@ void SLIC3D::PerformSLICO_ForGivenK(
 	//--------------------------------------------------
 
 	bool perturbseeds(true);
-	//edgemag表示图中的每个节点对应的梯度差
-	vector<double> edgemag(0);
+	edgemag.clear();
 	//根据体素点的梯度值衡量体素点的变化程度
 	if (perturbseeds) DetectLabEdges(m_volumevec, m_width, m_height, m_depth, edgemag);
 	std::cout << "Seed points has been initialized." << std::endl;
@@ -728,3 +727,19 @@ void SLIC3D::SaveSegmentBouyndaries(
 	outfile.close();
 	std::cout << "Segment boundary file for the super-voxels has been saved." << std::endl;
 }
+
+
+void SLIC3D::SaveGradient(
+	const string&				filename)
+{
+	
+	ofstream outfile(filename.c_str(), ios::binary);
+	for (int i = 0; i < edgemag.size(); i++)
+	{
+		float buf = edgemag[i];
+		outfile.write((char*)(&buf), sizeof(float));
+	}
+	outfile.close();
+	std::cout << "Gradient file for the super-voxels has been saved." << std::endl;
+}
+

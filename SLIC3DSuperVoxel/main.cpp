@@ -42,11 +42,55 @@ void readInfoFile(const string& infoFileName, int& data_number, string& datatype
 	
 }
 
+int readLabelFile(const string& label_file_name, int * label_array, const int& sz)
+{
+	ifstream in(label_file_name, std::ios::in | std::ios::binary);
+	unsigned char *contents = nullptr;
+	int k_number = 0;
+
+	int max_value = -0xffffff;
+	int min_value = 0xffffff;
+	if (in)
+	{
+		in.seekg(0, std::ios::end);
+		const long int fileSize = in.tellg();
+		contents = static_cast<unsigned char*>(malloc(static_cast<size_t>(fileSize + 1)));
+		in.seekg(0, std::ios::beg);
+		in.read(reinterpret_cast<char*>(contents), fileSize);
+		in.close();
+		contents[fileSize] = '\0';
+		std::cout << "Load gradient data successfully.\nThe file path is : " << label_file_name.c_str() << std::endl;
+
+		std::cout << "The gradient file size is : " << fileSize << std::endl;
+
+
+		const long long volume_length = sz;
+
+
+		for (auto x = 0; x < volume_length; ++x)
+		{
+			const auto src_idx = sizeof(int) * (x);
+			memcpy(&label_array[x], &contents[src_idx], sizeof(int));
+			max_value = label_array[x] > max_value ? label_array[x] : max_value;
+			min_value = label_array[x] < min_value ? label_array[x] : min_value;
+		}
+		std::cout << "Max value : " << max_value << " min_value : " << min_value << std::endl;
+	}
+	else
+	{
+		std::cout << "The label file " << label_file_name.c_str() << " fails loaded." << std::endl;
+	}
+	free(contents);
+
+	return max_value - min_value + 1;
+}
+
 int main(int argc, char* argv[])
 {
 	
 	if(argc<3)
 	{
+
 		std::cout << "Please using [SLIC3D.exe <input vifo file> <cluster number> [0 or 1 for output label file] [0 or 1 for output boundary file]]." << std::endl;
 		return -1;
 	}
@@ -88,6 +132,7 @@ int main(int argc, char* argv[])
 
 	if(argc>=4&&atoi(argv[3])==1)
 	{
+		slic_3d.SaveGradient(file_path + "_gradient.raw");
 		slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, file_path+"_label.raw");
 	}
 
@@ -96,9 +141,19 @@ int main(int argc, char* argv[])
 		auto segment_boundary_array = new int[dimension.x*dimension.y*dimension.z];
 		slic_3d.DrawContoursAroundSegments(segment_boundary_array, klabels, dimension.x, dimension.y, dimension.z);
 		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_boundary.raw");
+		
+
+		//another boundary
+		string merged_label_file_name = "J:/science data/4 Combustion/jet_0051/jet_mixfrac_0051_merged_label.raw";
+		int * label_array = new int[dimension.x*dimension.y*dimension.z];
+		readLabelFile(merged_label_file_name, label_array, dimension.x*dimension.y*dimension.z);
+		slic_3d.DrawContoursAroundSegments(segment_boundary_array, label_array, dimension.x, dimension.y, dimension.z);
+		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_merged_boundary.raw");
+
 		delete[] segment_boundary_array;
 	}
 
 	//getchar();
 	delete[] klabels;
 }
+
