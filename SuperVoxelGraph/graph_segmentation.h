@@ -139,10 +139,10 @@ public:
 
 		float threshold = std::min(S_n.max_w + c / S_n.n, S_m.max_w + c / S_m.n);
 
-		if(e.w>10)
-		{
-			std::cout<< threshold << "\t" << S_n.max_w << "\t" << S_m.max_w << "\t" << e.w << std::endl;
-		}
+		// if(e.w>10)
+		// {
+		// 	std::cout<< threshold << "\t" << S_n.max_w << "\t" << S_m.max_w << "\t" << e.w << std::endl;
+		// }
 
 		
 		//std::cout << "threshold and max weight for s_n and s_m : \t" << threshold <<"\t" << S_n.max_w << "\t" << S_m.max_w<<"\t"<<e.w<< std::endl;

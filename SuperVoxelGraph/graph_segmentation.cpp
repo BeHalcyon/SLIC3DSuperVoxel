@@ -209,6 +209,12 @@ void GraphSegmentation::oversegmentGraph() {
 		ImageNode & S_n = graph.findNodeComponent(n);
 		ImageNode & S_m = graph.findNodeComponent(m);
 
+		//if(edge.w>10)
+		{
+			std::cout << n.id <<"\t" << m.id << "\t" << S_n.id << "\t" << S_m.id << "\t" <<edge.w <<"\t"<<
+			S_n.max_w<<"\t"<<S_m.max_w<< std::endl;
+		}
+
 		// Are the nodes in different components?
 		if (S_m.id != S_n.id) {
 
