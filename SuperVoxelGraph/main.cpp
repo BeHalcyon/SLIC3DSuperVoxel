@@ -108,6 +108,56 @@ void saveMergeLabels(
 	std::cout << "Merged label file for the super-voxels has been saved." << std::endl;
 }
 
+void readVolumeFile(const string& label_file_name, unsigned char * volume_array, const int& sz)
+{
+	ifstream in(label_file_name, std::ios::in | std::ios::binary);
+	unsigned char *contents = nullptr;
+	int k_number = 0;
+
+	float max_value = -0xffffff;
+	float min_value = 0xffffff;
+	if (in)
+	{
+		in.seekg(0, std::ios::end);
+		const long int fileSize = in.tellg();
+		contents = static_cast<unsigned char*>(malloc(static_cast<size_t>(fileSize + 1)));
+		in.seekg(0, std::ios::beg);
+		in.read(reinterpret_cast<char*>(contents), fileSize);
+		in.close();
+		contents[fileSize] = '\0';
+		std::cout << "Load gradient data successfully.\nThe file path is : " << label_file_name.c_str() << std::endl;
+
+		std::cout << "The gradient file size is : " << fileSize << std::endl;
+
+
+		const long long volume_length = sz;
+
+		float * label_array = new float[sz];
+
+		for (auto x = 0; x < volume_length; ++x)
+		{
+			const auto src_idx = sizeof(float) * (x);
+			memcpy(&label_array[x], &contents[src_idx], sizeof(float));
+			max_value = label_array[x] > max_value ? label_array[x] : max_value;
+			min_value = label_array[x] < min_value ? label_array[x] : min_value;
+		}
+		std::cout << "Max value : " << max_value << " min_value : " << min_value << std::endl;
+
+		auto factor = 1.0 / (max_value - min_value);
+		for(auto x = 0;x<volume_length;x++)
+		{
+			volume_array[x] = (label_array[x] - min_value) *255.0*factor;
+		}
+
+	}
+	else
+	{
+		std::cout << "The label file " << label_file_name.c_str() << " fails loaded." << std::endl;
+	}
+	free(contents);
+}
+
+
 int main(int argc, char* argv[])
 {
 	int width = 480;
@@ -120,6 +170,7 @@ int main(int argc, char* argv[])
 	const string gradient_file_name = "J:/science data/4 Combustion/jet_0051/jet_mixfrac_0051_gradient.raw";
 	const string label_file_name = "J:/science data/4 Combustion/jet_0051/jet_mixfrac_0051_label.raw";
 	const string merged_label_file_name = "J:/science data/4 Combustion/jet_0051/jet_mixfrac_0051_merged_label.raw";
+	const string volume_file_name = "J:/science data/4 Combustion/jet_0051/jet_mixfrac_0051.raw";
 
 	readGradientFile(gradient_file_name, gradient_array, sz);
 	int k_number = readLabelFile(label_file_name, label_array, sz);
@@ -140,7 +191,11 @@ int main(int argc, char* argv[])
 	GraphSegmentation segmenter;
 	segmenter.setMagic(&magic);
 
-	segmenter.buildGraph(label_array, k_number, gradient_array, width, height, depth);
+	unsigned char* volume_array = new unsigned char[sz];
+	readVolumeFile(volume_file_name, volume_array, sz);
+
+
+	segmenter.buildGraph(volume_array, 256, label_array, k_number, gradient_array, width, height, depth);
 	segmenter.oversegmentGraph();
 	//segmenter.enforceMinimumSegmentSize(minimum_segment_size);
 

@@ -46,17 +46,25 @@ public:
  * color which is needed to compute the weights between pixels.
  * \author David Stutz
  */
+
+#define MAX_HISTOGRAM_SIZE 64
+
 class ImageNode {
 public:
 	/** \brief Default constructor.
 	 */
-	ImageNode(std::vector<int>& voxels) : voxels(voxels), l(0), n(1), id(0), max_w(0) {
+	ImageNode(std::vector<int>& voxels) :/* voxels(voxels),*/ l(0), n(1), id(0), max_w(0) {
 
 	};
 
 	ImageNode() : l(0), n(1), id(0), max_w(0) {
 		voxels.clear();
+		voxel_histogram.clear();
+		voxel_histogram.resize(MAX_HISTOGRAM_SIZE, 0);
 	};
+
+	/** \brief voxel histogram array */
+	std::vector<int> voxel_histogram;
 
 	/** \brief voxel position [z,y,x] array in 1D */
 	std::vector<int> voxels;
@@ -219,13 +227,21 @@ public:
 		// Update component count.
 		K--;
 
-		// Update voxel position
-		for (auto voxel : S_m.voxels)
+		// Update voxel histogram
+
+		for (auto i=0;i<S_m.voxel_histogram.size();i++)
 		{
-			S_n.voxels.push_back(voxel);
+			S_n.voxel_histogram[i] += S_m.voxel_histogram[i];
+			S_n.voxels.push_back(S_m.voxels[i]);
 		}
 
+		// for (auto voxel : S_m.voxels)
+		// {
+		// 	S_n.voxels.push_back(voxel);
+		// }
+
 		// Release S_m
+		S_m.voxel_histogram.clear();
 		S_m.voxels.clear();
 	}
 

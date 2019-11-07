@@ -141,7 +141,9 @@ public:
 
 		// if(e.w>10)
 		// {
-		// 	std::cout<< threshold << "\t" << S_n.max_w << "\t" << S_m.max_w << "\t" << e.w << std::endl;
+		std::cout << S_n.id << "\t" << S_m.id << "\t" << "\t" << e.w << "\t" <<
+			S_n.max_w << "\t" << S_m.max_w << "\t" << 
+			S_n.max_w + c / S_n.n << "\t" << S_m.max_w + c / S_m.n << "\t"  << std::endl;
 		// }
 
 		
@@ -191,7 +193,14 @@ public:
 	 * between pixels using the underlying distance.
 	 * \param[in] image image to oversegment
 	 */
-	void buildGraph(const int* label, const int& k_number, const double* gradient, const int & width, const int & height, const int & depth);
+	void buildGraph(const unsigned char * volume_data,
+		const int&		dimension, 
+		const int*		label,
+		const int&		k_number, 
+		const double*	gradient,
+		const int &		width,
+		const int &		height, 
+		const int &		depth);
 
 	/** \brief Oversegment the given graph.
 	 */

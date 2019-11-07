@@ -4,13 +4,18 @@
 #include <stack>
 #include <iostream>
 
-void GraphSegmentation::buildGraph(	const int*		label, 
+void GraphSegmentation::buildGraph(
+									const unsigned char * volume_data,
+									const int&		dimension,
+									const int*		label, 
 									const int&		k_number, 
 									const double*	gradient, 
 									const int &		width, 
 									const int &		height,
 									const int &		depth)
 {
+	std::cout << "Begin build graph." << std::endl;
+
 	W = width;
 	H = height;
 	D = depth;
@@ -18,6 +23,9 @@ void GraphSegmentation::buildGraph(	const int*		label,
 	graph = ImageGraph(k_number);
 
 	// Init each node and assign the id as cluster id.
+
+	std::vector<int> supervoxel_size(k_number, 0);
+
 	for(auto i=0; i < N ;i++)
 	{
 		const auto k_id = label[i];
@@ -25,6 +33,16 @@ void GraphSegmentation::buildGraph(	const int*		label,
 		node.id = k_id;
 		node.l = k_id;
 		node.voxels.push_back(i);
+		auto index = static_cast<int>((volume_data[i] * 1.0 / dimension) *(MAX_HISTOGRAM_SIZE*1.0));
+
+		node.voxel_histogram[index]++;
+		supervoxel_size[k_id]++;
+		//
+		// if (index > 10)
+		// {
+		// 	std::cout << graph.getNode(k_id).id << "\t" <<index<<"\t"<< graph.getNode(k_id).voxel_histogram[index] << std::endl;
+		// }
+
 	}
 
 	// Calculate the max weight of neighbor voxels for each super-voxel (region)
@@ -45,58 +63,61 @@ void GraphSegmentation::buildGraph(	const int*		label,
 	{
 		auto & node = graph.getNode(i);
 		
-		const auto & voxels = node.voxels;
+		//const auto & voxels = node.voxels;
 		double max_weight = 0;
 
+
 		// To get the maximum weight
-		if(!voxels.empty())
-		{
-			std::stack<int> neighbor_voxels;
-			std::map<int, int> not_accessed_voxels;
+		// if(!voxels.empty())
+		// {
+		// 	std::stack<int> neighbor_voxels;
+		// 	std::map<int, int> not_accessed_voxels;
+		//
+		// 	for (auto voxel : voxels)
+		// 	{
+		// 		not_accessed_voxels[voxel] = 1;
+		// 	}
+		//
+		// 	neighbor_voxels.push(voxels[0]);
+		// 	while(!neighbor_voxels.empty())
+		// 	{
+		// 		const auto voxel = neighbor_voxels.top();
+		// 		neighbor_voxels.pop();
+		//
+		// 		not_accessed_voxels[voxel] = 0;
+		//
+		// 		const auto Z = voxel / (W*H);
+		// 		const auto buf = voxel % (W*H);
+		// 		const auto X = buf % W;
+		// 		const auto Y = buf / W;
+		// 		for (auto idx = 0; idx < 6; idx++)
+		// 		{
+		// 			const auto z = Z + dz6[idx];
+		// 			const auto y = Y + dy6[idx];
+		// 			const auto x = X + dx6[idx];
+		// 			if ((z > 0 && z < D) && (y > 0 && y < H) && (x > 0 && x < W))
+		// 			{
+		// 				auto neighbor_idx = z * H * W + y * W + x;
+		// 				//the two voxels are neighbored and belong to the same cluster.
+		// 				if (not_accessed_voxels[neighbor_idx] && label[voxel] == label[neighbor_idx])
+		// 				{
+		// 					max_weight = std::max(max_weight, abs(gradient[voxel] - gradient[neighbor_idx]));
+		// 					neighbor_voxels.push(neighbor_idx);
+		// 					//if(gradient[voxel]>100|| gradient[neighbor_idx]>100)
+		// 					//std::cout << voxel << "\t" << neighbor_idx <<"\t"<< gradient[voxel] <<"\t"<<gradient[neighbor_idx] <<std::endl;
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// 	node.max_w = max_weight;
+		// }
+		// else
+		// {
+		node.max_w = 0;
+		//}
+		//node.n = voxels.size();
+		node.n = supervoxel_size[node.id];
 
-			for (auto voxel : voxels)
-			{
-				not_accessed_voxels[voxel] = 1;
-			}
-
-			neighbor_voxels.push(voxels[0]);
-			while(!neighbor_voxels.empty())
-			{
-				const auto voxel = neighbor_voxels.top();
-				neighbor_voxels.pop();
-
-				not_accessed_voxels[voxel] = 0;
-
-				const auto Z = voxel / (W*H);
-				const auto buf = voxel % (W*H);
-				const auto X = buf % W;
-				const auto Y = buf / W;
-				for (auto idx = 0; idx < 6; idx++)
-				{
-					const auto z = Z + dz6[idx];
-					const auto y = Y + dy6[idx];
-					const auto x = X + dx6[idx];
-					if ((z > 0 && z < D) && (y > 0 && y < H) && (x > 0 && x < W))
-					{
-						auto neighbor_idx = z * H * W + y * W + x;
-						//the two voxels are neighbored and belong to the same cluster.
-						if (not_accessed_voxels[neighbor_idx] && label[voxel] == label[neighbor_idx])
-						{
-							max_weight = std::max(max_weight, abs(gradient[voxel] - gradient[neighbor_idx]));
-							neighbor_voxels.push(neighbor_idx);
-							//if(gradient[voxel]>100|| gradient[neighbor_idx]>100)
-							//std::cout << voxel << "\t" << neighbor_idx <<"\t"<< gradient[voxel] <<"\t"<<gradient[neighbor_idx] <<std::endl;
-						}
-					}
-				}
-			}
-			node.max_w = max_weight;
-		}
-		else
-		{
-			node.max_w = 0;
-		}
-		node.n = voxels.size();
 	}
 
 	std::cout << "The weight of nodes have been initialized." << std::endl;
@@ -107,7 +128,8 @@ void GraphSegmentation::buildGraph(	const int*		label,
 	int dy3[3] = { 0,1,0 };
 	int dz3[3] = { 0,0,1 };
 	std::vector<std::vector<double>> label_edge(k_number);
-	for (auto i = 0; i < k_number; i++) label_edge[i].resize(k_number, 0xffffff);
+	//for (auto i = 0; i < k_number; i++) label_edge[i].resize(k_number, 0xffffff);
+	for (auto i = 0; i < k_number; i++) label_edge[i].resize(k_number, -1);
 
 	for (auto i = 0; i < D; i++)
 	{
@@ -131,7 +153,7 @@ void GraphSegmentation::buildGraph(	const int*		label,
 						// The two neighbor regions have an edge if they belong to different clusters
 						if(cur_label!=neighbor_label)
 						{
-							label_edge[cur_label][neighbor_label] = std::min(std::min(
+							label_edge[cur_label][neighbor_label] = std::max(std::max(
 								label_edge[cur_label][neighbor_label], 
 								abs(gradient[cur_idx] - gradient[neighbor_idx])),
 								label_edge[neighbor_label][cur_label]);
@@ -151,20 +173,37 @@ void GraphSegmentation::buildGraph(	const int*		label,
 	int nonzero_edge_number = 0;
 	for(auto i=0;i<k_number;i++)
 	{
+		//std::cout << i << "\t"<< graph.getNumNodes() << std::endl;
 		const auto & node = graph.getNode(i);
 		for(auto j=i+1;j<k_number;j++)
 		{
 			// That means the two regions are neighbored.
-			if(label_edge[i][j] < 0xffffff)
+			if(label_edge[i][j] > -1)
 			{
 				const auto & other = graph.getNode(j);
 				ImageEdge edge;
 				edge.n = graph.getNode(i).id;
 				edge.m = graph.getNode(j).id;
 				//edge.w = (*distance)(node, other);
-				edge.w = label_edge[edge.n][edge.m];
-				graph.addEdge(edge);
+				//edge.w = label_edge[edge.n][edge.m];
 
+				//std::cout << i << "\t" << j <<"\t" << graph.getNumNodes() << std::endl;
+
+				auto& node_i_histogram = graph.getNode(i).voxel_histogram;
+				auto& node_j_histogram = graph.getNode(j).voxel_histogram;
+
+				double result = 0.0;
+				for(auto p=0;p<MAX_HISTOGRAM_SIZE;p++)
+				{
+					double square = (node_i_histogram[p] - node_j_histogram[p])
+						*(node_i_histogram[p] - node_j_histogram[p]);
+					if (node_i_histogram[p] + node_j_histogram[p] == 0) continue;
+
+					result += square / (node_i_histogram[p] + node_j_histogram[p]);
+				}
+				edge.w = result<1e-6? 0 : sqrt(result);
+
+				graph.addEdge(edge);
 				//if (edge.w > 100)
 				//	std::cout << label_edge[i][j] << "\t" << i << "\t" << j << std::endl;
 				edge_number++;
@@ -184,8 +223,6 @@ void GraphSegmentation::buildGraph(	const int*		label,
 	// 	if(node.max_w!=0)
 	// 	std::cout << node.l << "\t" << node.id << "\t" << node.n << "\t" << node.max_w << std::endl;
 	// }
-
-
 
 }
 
@@ -210,23 +247,40 @@ void GraphSegmentation::oversegmentGraph() {
 		ImageNode & S_m = graph.findNodeComponent(m);
 
 		//if(edge.w>10)
-		{
-			std::cout << n.id <<"\t" << m.id << "\t" << S_n.id << "\t" << S_m.id << "\t" <<edge.w <<"\t"<<
-			S_n.max_w<<"\t"<<S_m.max_w<< std::endl;
-		}
+		// {
+		// 	std::cout << n.id <<"\t" << m.id << "\t" << S_n.id << "\t" << S_m.id << "\t" <<edge.w <<"\t"<<
+		// 	S_n.max_w<<"\t"<<S_m.max_w<< std::endl;
+		// }
 
 		// Are the nodes in different components?
 		if (S_m.id != S_n.id) {
 
+			// Update the edge weight
+
+			double result = 0.0;
+			for (auto p = 0; p < MAX_HISTOGRAM_SIZE; p++)
+			{
+				double square = (S_n.voxel_histogram[p] - S_m.voxel_histogram[p])
+					*(S_n.voxel_histogram[p] - S_m.voxel_histogram[p]);
+				if (S_n.voxel_histogram[p] + S_m.voxel_histogram[p] == 0) continue;
+
+				result += square / (S_n.voxel_histogram[p] + S_m.voxel_histogram[p]);
+			}
+			edge.w = result < 1e-6 ? 0 : sqrt(result);
+
+
 			// Here comes the magic!
 			if ((*magic)(S_n, S_m, edge)) {
 
+				
 				//if(edge.w>100)
 				//{
 				//	std::cout << edge.n << "\t" << edge.m << "\t" << edge.w << std::endl;
 				//}
-
-				graph.merge(S_n, S_m, edge);
+				if (S_n.id < S_m.id)
+					graph.merge(S_n, S_m, edge);
+				else
+					graph.merge(S_m, S_n, edge);
 			}
 		}
 	}
@@ -259,8 +313,6 @@ void GraphSegmentation::enforceMinimumSegmentSize(int M) {
 
 
 void GraphSegmentation::deriveLabels(int * merged_label) {
-
-
 
 
 	int cnt = 0;
