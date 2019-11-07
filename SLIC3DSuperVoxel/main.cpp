@@ -4,6 +4,8 @@
 
 #include "SourceVolume.h"
 #include "SLIC3D.h"
+#include "graph_segmentation.h"
+#include "cmdline.h"
 
 void readInfoFile(const string& infoFileName, int& data_number, string& datatype, hxy::my_int3& dimension, hxy::my_double3& space,
 	vector<string>& file_list)
@@ -85,19 +87,48 @@ int readLabelFile(const string& label_file_name, int * label_array, const int& s
 	return max_value - min_value + 1;
 }
 
-int main(int argc, char* argv[])
+void doSuperVoxelMerge(
+					int *					merged_label,
+					const unsigned char*	volume_data, 
+					const int &				dimension,
+					const int*				label,
+					const double*			gradient_array,
+					const int &				width,
+					const int &				height, 
+					const int &				depth,
+					const int &				label_number, 
+					const int &				k_threshold,
+					const string&			file_path = "")
 {
-	
-	if(argc<3)
-	{
+	std::cout << "Begin super-voxel merged algorithm..." << std::endl;
+	int minimum_segment_size = 10;
 
-		std::cout << "Please using [SLIC3D.exe <input vifo file> <cluster number> [0 or 1 for output label file] [0 or 1 for output boundary file]]." << std::endl;
-		return -1;
-	}
+	std::cout << "Threshold, minimum segment size and k number: " << k_threshold << "\t" << minimum_segment_size << std::endl;
+
+	GraphSegmentationMagicThreshold magic(k_threshold);
+
+	GraphSegmentation segmenter;
+	segmenter.setMagic(&magic);
+
+	segmenter.buildGraph(volume_data, dimension, label, label_number, gradient_array, width, height, depth);
+	segmenter.oversegmentGraph();
+	//segmenter.enforceMinimumSegmentSize(minimum_segment_size);
+
+	const auto sz = width * height * depth;
+	for (auto i = 0; i < sz; i++) merged_label[i] = -1;
+	segmenter.deriveLabels(merged_label);
+
+	if(!file_path.empty())
+		segmenter.saveMergeLabels(merged_label, width, height, depth, file_path);
+}
+
+void doAlgorithmWithoutCmdLine()
+{
 
 	//string			infoFileName = "F:/CThead/manix/manix.vifo";
 	//string			infoFileName = "F:/atmosphere/timestep21_float/multiple_variables.vifo";
-	string			infoFileName = argv[1];
+	string			infoFileName = "J:/science data/4 Combustion/jet_0051/mixfrac.vifo";
+
 	int				data_number;
 	string			datatype;
 	hxy::my_int3	dimension;
@@ -120,7 +151,7 @@ int main(int argc, char* argv[])
 	//----------------------------------
 	// Initialize parameters
 	//----------------------------------
-	int k = atoi(argv[2]);//Desired number of superpixels.
+	int k = 8196;//Desired number of superpixels.
 	double m = 20;//Compactness factor. use a value ranging from 10 to 40 depending on your needs. Default is 10
 	int* klabels = new int[dimension.x*dimension.y*dimension.z];
 	int num_labels(0);
@@ -130,30 +161,147 @@ int main(int argc, char* argv[])
 	//string label_file = "F:/CThead/manix/manix_label.raw";
 	//string label_file = "F:/atmosphere/timestep21_float/_SPEEDf21_label.raw";
 
-	if(argc>=4&&atoi(argv[3])==1)
-	{
-		slic_3d.SaveGradient(file_path + "_gradient.raw");
-		slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, file_path+"_label.raw");
-	}
+	slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, file_path+"_label.raw");
 
-	if(argc>=5&&atoi(argv[4])==1)
-	{
-		auto segment_boundary_array = new int[dimension.x*dimension.y*dimension.z];
-		slic_3d.DrawContoursAroundSegments(segment_boundary_array, klabels, dimension.x, dimension.y, dimension.z);
-		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_boundary.raw");
-		
+	slic_3d.SaveGradient(file_path + "_gradient.raw");
 
-		//another boundary
-		string merged_label_file_name = "J:/science data/4 Combustion/jet_0051/jet_mixfrac_0051_merged_label.raw";
-		int * label_array = new int[dimension.x*dimension.y*dimension.z];
-		readLabelFile(merged_label_file_name, label_array, dimension.x*dimension.y*dimension.z);
-		slic_3d.DrawContoursAroundSegments(segment_boundary_array, label_array, dimension.x, dimension.y, dimension.z);
-		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_merged_boundary.raw");
 
-		delete[] segment_boundary_array;
-	}
+	auto segment_boundary_array = new int[dimension.x*dimension.y*dimension.z];
+	slic_3d.DrawContoursAroundSegments(segment_boundary_array, klabels, dimension.x, dimension.y, dimension.z);
+	slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_boundary.raw");
 
-	//getchar();
+
+	int k_threshold = 100000;
+	auto merged_label = new int[dimension.x*dimension.y*dimension.z];
+	doSuperVoxelMerge(merged_label, (*volume_data).data(), 
+		source_volume.getRegularDimenion(),
+		klabels, 
+		slic_3d.getGradient().data(),
+		dimension.x, dimension.y, dimension.z, 
+		num_labels, k_threshold, file_path + "_merged_label.raw");
+
+	slic_3d.DrawContoursAroundSegments(segment_boundary_array, merged_label, dimension.x, dimension.y, dimension.z);
+	slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_merged_boundary.raw");
+
+	delete[] segment_boundary_array;
 	delete[] klabels;
 }
 
+void doAlgorithmWithCmdLine(int argc, char* argv[])
+{
+	// create a parser
+	cmdline::parser a;
+
+	a.add<string>("vifo_path", 'p', "vifo file path", true, "");
+
+
+	a.add<int>("cluster_number", 'c', "initial cluster number", false, 8196, cmdline::range(100, 6553500));
+
+	// cmdline::oneof() can restrict options.
+	a.add<bool>("super_voxel_label", 'l', "whether output super-voxel label as a raw file (int) or not", false, false,
+		cmdline::oneof<bool>(true, false));
+
+	a.add<bool>("super_voxel_boundary", 'b', "whether output super-voxel boundary as a raw file (int) or not", false, true,
+		cmdline::oneof<bool>(true, false));
+
+	a.add<bool>("gradient", 'g', "whether output gradient as a raw file (float) or not", false, false,
+		cmdline::oneof<bool>(true, false));
+
+	a.add<bool>("merge", 'm', "whether do super-voxel merged algorithm or not", true, false,
+		cmdline::oneof<bool>(true, false));
+
+
+	a.add<int>("k_threshold", 'k', "the k threshold when doing super-voxel merged algorithm", false, 100000, cmdline::range(0, 655350000));
+
+	a.add<bool>("merged_label", 'L', "whether output merged label as a raw file (int) or not", false, false,
+		cmdline::oneof<bool>(true, false));
+
+	a.add<bool>("merged_boundary", 'B', "whether output merged boundary as a raw file (int) or not", false, true,
+		cmdline::oneof<bool>(true, false));
+
+	// Call add method without a type parameter.
+	//a.add("non_parameter", '\0', "gzip when transfer");
+
+	a.parse_check(argc, argv);
+
+	string			infoFileName = a.get<string>("vifo_path");
+	int				data_number;
+	string			datatype;
+	hxy::my_int3	dimension;
+	hxy::my_double3	space;
+	vector<string>	file_list;
+
+	readInfoFile(infoFileName, data_number, datatype, dimension, space, file_list);
+
+	auto file_path = file_list[0].substr(0, file_list[0].find_last_of('.'));
+
+	SourceVolume source_volume(file_list, dimension.x, dimension.y, dimension.z, datatype);
+
+	//source_volume.loadVolume();	//origin data
+	source_volume.loadRegularVolume(); //[0, 255] data
+	//source_volume.loadDownSamplingVolume(); //[0, histogram_dimension] data
+
+	auto volume_data = source_volume.getRegularVolume(0);
+
+	//----------------------------------
+	// Initialize parameters
+	//----------------------------------
+	int k = a.get<int>("cluster_number");
+	double m = 20;//Compactness factor. use a value ranging from 10 to 40 depending on your needs. Default is 10
+	int* klabels = new int[dimension.x*dimension.y*dimension.z];
+	int num_labels(0);
+	SLIC3D slic_3d;
+	slic_3d.PerformSLICO_ForGivenK((*volume_data).data(), dimension.x, dimension.y, dimension.z, klabels, num_labels, k, m);
+	if (a.get<bool>("super_voxel_label"))
+	{
+		slic_3d.SaveSuperpixelLabels(klabels, dimension.x, dimension.y, dimension.z, file_path + "_label.raw");
+	}
+	if (a.get<bool>("gradient"))
+	{
+		slic_3d.SaveGradient(file_path + "_gradient.raw");
+	}
+	auto segment_boundary_array = new int[dimension.x*dimension.y*dimension.z];
+	slic_3d.DrawContoursAroundSegments(segment_boundary_array, klabels, dimension.x, dimension.y, dimension.z);
+
+	if (a.get<bool>("super_voxel_boundary"))
+	{
+
+		slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_boundary.raw");
+	}
+
+	if (a.get<bool>("merge")) {
+		int k_threshold = a.get<int>("k_threshold");
+		auto merged_label = new int[dimension.x*dimension.y*dimension.z];
+
+		string buf_file_path = "";
+		if (a.get<bool>("merged_label")) buf_file_path = file_path + "_merged_label.raw";
+
+		doSuperVoxelMerge(merged_label, (*volume_data).data(),
+			source_volume.getRegularDimenion(),
+			klabels,
+			slic_3d.getGradient().data(),
+			dimension.x, dimension.y, dimension.z,
+			num_labels, k_threshold, buf_file_path);
+
+		if (a.get<bool>("merged_boundary")) {
+			slic_3d.DrawContoursAroundSegments(segment_boundary_array, merged_label, dimension.x, dimension.y, dimension.z);
+			slic_3d.SaveSegmentBouyndaries(segment_boundary_array, dimension.x, dimension.y, dimension.z, file_path + "_merged_boundary.raw");
+		}
+		delete[] merged_label;
+	}
+	delete[] segment_boundary_array;
+	delete[] klabels;
+}
+
+int main(int argc, char* argv[])
+{
+
+	if(argc <= 1)
+	{
+		doAlgorithmWithoutCmdLine();
+	}
+	else
+	{
+		doAlgorithmWithCmdLine(argc, argv);
+	}
+}

@@ -115,11 +115,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cmdline.h" />
+    <ClInclude Include="graph_segmentation.h" />
+    <ClInclude Include="image_graph.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SLIC3D.h" />
     <ClInclude Include="SourceVolume.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="graph_segmentation.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SLIC3D.cpp" />
     <ClCompile Include="SourceVolume.cpp" />

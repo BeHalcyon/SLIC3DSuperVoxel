@@ -85,6 +85,8 @@ public:
 	void deleteData();
 
 	bool inMemory() const { return is_data_in_memory; }
+
+	int getRegularDimenion() const { return regular_histogram_dimension; }
 private:
 
 	/**

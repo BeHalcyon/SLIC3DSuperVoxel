@@ -24,6 +24,15 @@
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="cmdline.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="graph_segmentation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="image_graph.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SLIC3D.cpp">
@@ -33,6 +42,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="graph_segmentation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

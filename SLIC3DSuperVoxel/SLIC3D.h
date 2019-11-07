@@ -82,6 +82,11 @@ public:
 
 	void SaveGradient(
 		const string&			filename);
+
+	vector<double>& getGradient()
+	{
+		return edgemag;
+	}
 private:
 	//============================================================================
 	// Detect color edges, to help PerturbSeeds()
