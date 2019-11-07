@@ -15,7 +15,7 @@ SLIC3DSuperVoxel.exe --TAG=parameter_value
 
 Example:
 ```c
-SLIC3DSuperVoxel.exe --vifo_path="C:\mixfrac.vifo" --merge=0
+SLIC3DSuperVoxel.exe --vifo_path="C:/mixfrac.vifo" --merge=0
 ```
 ![cmdline](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/cmdline.png)
 
