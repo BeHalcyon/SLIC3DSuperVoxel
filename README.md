@@ -1,18 +1,26 @@
-# SLIC3DSuperVoxel
-SLIC algorithm for volume data in 3D space
+
+# SLIC3DSuperVoxel (SLIC algorithm for volume data in 3D space)
+
+Two works are achieved:
+**STEP 1. Calculating super-voxels**
+	
+**STEP 2. Merging similar super-voxels using graph-based volume segmentation**
+	Compute the edge weight using the **chi-squared distance** between 1D intensity histograms of the two super-voxels. Each histogram uses a total of 64 bins across the entire scalar range of the input volume.
 
 
 Using:
 ```c
-SLIC3DSuperVoxel.exe "input vifo file" "cluster number k" "0 or 1 for output label file" "0 or 1 for output boundary file"
+SLIC3DSuperVoxel.exe --TAG=parameter_value
 ```
 
 Example:
 ```c
-SLIC3DSuperVoxel.exe F:/H.vifo 8196 0 1
+SLIC3DSuperVoxel.exe --vifo_path="C:\mixfrac.vifo" --merge=0
 ```
+![cmdline](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/cmdline.png)
 
-vifo file format:
+
+## vifo file format:
 -----------------------------------------------------
 ```cpp
 1                   //volume number
@@ -35,6 +43,5 @@ Several results:
 
 Reference:
 -----------------------------------------------------
-[1] SLIC Superpixels Compared to State-of-the-Art Superpixel Methods
-
-[2] FeatureLego: Volume Exploration Using Exhausting Clustering of Super-Voxels
+- [1] SLIC Superpixels Compared to State-of-the-Art Superpixel Methods
+- [2] FeatureLego: Volume Exploration Using Exhausting Clustering of Super-Voxels
