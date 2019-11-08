@@ -350,13 +350,13 @@ void SLIC3D::PerformSuperpixelSegmentation_VariableSandM(
 	
 	//vector<double> maxlab(numk, 10 * 10);//THIS IS THE VARIABLE VALUE OF M, just start with 10
 	//最大亮度值，相当于控制亮度的权重， m越大，其权重越小，这里设置为定值？
-	vector<double> maxintensity(numk, 10*1);
+	vector<double> maxintensity(numk, 10*2);
 
 	//vector<double> maxxy(numk, STEP*STEP);//THIS IS THE VARIABLE VALUE OF M, just start with 10
-	vector<double> maxxyz(numk, STEP*STEP);
+	vector<double> maxxyz(numk, STEP*STEP*STEP);
 	
 
-	double invxywt = 1.0 / (STEP*STEP);//NOTE: this is different from how usual SLIC/LKM works
+	double invxywt = 1.0 / (STEP*STEP*STEP);//NOTE: this is different from how usual SLIC/LKM works
 
 	while (numitr < NUMITR)
 	{
@@ -387,7 +387,7 @@ void SLIC3D::PerformSuperpixelSegmentation_VariableSandM(
 						distintensity[i] = (m_volumevec[i] - kseedintensity[n])*(m_volumevec[i] - kseedintensity[n]);
 						distxyz[i] = (z - kseedsz[n])*(z - kseedsz[n]) + (y - kseedsy[n])*(y - kseedsy[n]) + (x - kseedsx[n])*(x - kseedsx[n]);
 
-						//这里的距离度量有问题
+						//Debug 20191108 可修改距离映射，减少invxywt能有效降低距离的权重，减少maxintensity[n]能有效提高灰度值的权重
 						double dist = distintensity[i] / maxintensity[n] + distxyz[i] * invxywt;//only varying m, prettier superpixels
 
 						if (dist < distvec[i])
