@@ -2,6 +2,7 @@
 # SLIC3DSuperVoxel (SLIC algorithm for volume data in 3D space)
 
 Two works are achieved:
+
 **STEP 1. Calculating super-voxels**
 	
 **STEP 2. Merging similar super-voxels using graph-based volume segmentation**
@@ -30,7 +31,7 @@ uchar               //volume data type in "uchar" "float" "ushort"
 SPEEDf21.raw        //volume relative path
 ```
 
-Several results:
+Results for STEP 1:
 -----------------------------------------------------
 
 ![xy plane](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_xyplane.png)
@@ -40,6 +41,12 @@ Several results:
 ![3D results](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_MANIX.png)
 ![3D results](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/design%20sketch_tooth.png)
 
+
+Results for STEP 2:
+-----------------------------------------------------
+(A modification for distance measurement to achieve irregular super-voxels)
+![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/merged_combustion.png)
+![image](https://github.com/XiangyangHe/SLIC3DSuperVoxel/blob/master/image/merged_H.png)
 
 Reference:
 -----------------------------------------------------
