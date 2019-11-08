@@ -55,3 +55,4 @@ Reference:
 -----------------------------------------------------
 - [1] SLIC Superpixels Compared to State-of-the-Art Superpixel Methods
 - [2] FeatureLego: Volume Exploration Using Exhausting Clustering of Super-Voxels
+- [3] E±cient Graph-Based Image Segmentation
