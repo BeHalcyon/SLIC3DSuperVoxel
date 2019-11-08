@@ -5,8 +5,11 @@ Two works are achieved:
 
 **STEP 1. Calculating super-voxels**
 	
-**STEP 2. Merging similar super-voxels using graph-based volume segmentation**
-	Compute the edge weight using the **chi-squared distance** between 1D intensity histograms of the two super-voxels. Each histogram uses a total of 64 bins across the entire scalar range of the input volume.
+**STEP 2. Merging similar super-voxels using graph-based volume segmentation** (Not completed)
+
+Compute the edge weight using the **chi-squared distance** between 1D intensity histograms of the two super-voxels. Each histogram uses a total of 64 bins across the entire scalar range of the input volume.
+
+The segementation algorithm is under testing and is not convincing. There is an error in the measurement of the weight for edges and internal variance of regions. Current internal variance is measured by the maximum gradient difference of the edges in region, while the origin method is using the maximum edge weight of MST of the region.
 
 
 Using:
